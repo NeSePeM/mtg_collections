@@ -16,6 +16,7 @@ class Card(models.Model):
     """Модель карты."""
 
     #  Делать ли все эти поля ForeignKey?
+    scryfall_id = models.UUIDField()
     title = models.CharField()  # Название. На английском можно считать primary key. Хотя у меня в основном русские карты.
     super_type = models.TextChoices()  # Супертип карты: базовый, легендарный, снежный.
     typee = models.TextChoices()  # Тип карты: creature, land, enchantment, instant, sorcery, planeswalker, artifact, etc.
