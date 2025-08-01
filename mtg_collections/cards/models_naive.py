@@ -27,12 +27,13 @@ class Card(models.Model):
     foiled = models.BooleanField()
     language = models.IntegerChoices()  # Язык карты: ru, en, etc.
     image = models.ImageField()
-    layout = models.TextChoices()
 
     #  Могут быть, а могут не быть:
     power = models.CharField()
     toughness = models.CharField()
     initial_loyalty = models.IntegerField()
+
+    # Двустронние/двойные карты - в ступоре, что с ними делать..
 
     class Meta:
         verbose_name = 'Карта'
