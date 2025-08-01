@@ -25,9 +25,9 @@ class Card(models.Model):
     sett = models.CharField()  # Название сета. Трёхбуквенный код.
     rarity = models.TextChoices()  # Редкость карты: common, uncommon, rare, mythic.
     foiled = models.BooleanField()
-    language = models.IntegerChoices()  # Язык карты: ru, en, etc.
+    language = models.TextChoices()  # Язык карты: ru, en, etc.
     image = models.ImageField()
-    layout = models.TextChoices()
+    layout = models.TextChoices()  # Указание на нестандартность карты.
 
     #  Могут быть, а могут не быть:
     power = models.CharField()
@@ -42,7 +42,15 @@ class Card(models.Model):
         ...
     
 class CardQuantified(models.Model):
-    """Модель количества карт в коллекции или колоде."""
+    """
+    Модель количества карт в коллекции или колоде.
+    
+    Лучше отделить собственно карту и объект в колоде.
+    Правда, не уверен, что нужно ли делать это через ManyToManyField
+    нарпрямую на карту с полем through и обнуляемыми внешними ключами
+    (так как потребуется ссылка как на Deck, так и на Collection) или как здесь.
+    Да и в чём разница?..
+    """
 
     card = models.ForeignKey(Card, on_delete=models.CASCADE)
     count = models.IntegerField()
@@ -68,6 +76,8 @@ class Collection(models.Model):
 class Deck(models.Model):
     """Модель колоды."""
 
+    name = models.CharField()
+    description = models.TextField()
     cards = models.ManyToManyField(CardQuantified)
 
     class Meta:
