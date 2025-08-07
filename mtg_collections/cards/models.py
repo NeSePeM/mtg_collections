@@ -39,13 +39,13 @@ class Card(models.Model):
         verbose_name = 'Карта'
         verbose_name_plural = 'Карты'
 
-    def __str__(self):
-        ...
-    
+    def __str__(self) -> str:
+        return str(self.title)
+
 class CardQuantified(models.Model):
     """
     Модель количества карт в коллекции или колоде.
-    
+
     Лучше отделить собственно карту и объект в колоде.
     Правда, не уверен, что нужно ли делать это через ManyToManyField
     нарпрямую на карту с полем through и обнуляемыми внешними ключами
@@ -64,26 +64,28 @@ class CardQuantified(models.Model):
 class Collection(models.Model):
     """Модель коллекции."""
 
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     cards = models.ManyToManyField(CardQuantified)
 
     class Meta:
         verbose_name = 'Коллекция'
         verbose_name_plural = 'Коллекции'
 
-    def __str__(self):
-        ...
+    def __str__(self) -> str:
+        return f'Коллекция карт {self.user}'
 
 
 class Deck(models.Model):
     """Модель колоды."""
 
-    name = models.CharField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField()
     description = models.TextField()
     cards = models.ManyToManyField(CardQuantified)
 
     class Meta:
         verbose_name = 'Колода'
         verbose_name_plural = 'Колоды'
-    
-    def __str__(self):
-        ...
+
+    def __str__(self) -> str:
+        return str(self.title)
