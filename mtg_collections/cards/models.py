@@ -4,8 +4,11 @@
 Приложение для создания коллекций и колод карт.
 """
 
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+import enums
 
 
 class User(AbstractUser):
@@ -16,31 +19,31 @@ class Card(models.Model):
     """Модель карты."""
 
     #  Делать ли все эти поля ForeignKey?
-    scryfall_id = models.UUIDField()
-    title = models.CharField()  # Название. На английском можно считать primary key. Хотя у меня в основном русские карты.
-    super_type = models.TextChoices()  # Супертип карты: базовый, легендарный, снежный.
-    typee = models.TextChoices()  # Тип карты: creature, land, enchantment, instant, sorcery, planeswalker, artifact, etc.
-    sub_type = models.CharField()
-    text = models.TextField()
-    mana_cost = models.CharField()  # Написано в формате {1}{W}{U}{B}{R}{G} - формат из Правил.
-    sett = models.CharField()  # Название сета. Трёхбуквенный код.
-    rarity = models.TextChoices()  # Редкость карты: common, uncommon, rare, mythic.
-    foiled = models.BooleanField()
-    language = models.TextChoices()  # Язык карты: ru, en, etc.
-    image = models.ImageField()
-    layout = models.TextChoices()  # Указание на нестандартность карты.
+    scryfall_id = models.UUIDField('Идентификатор карты')
+    name = models.CharField('Имя')  # Название. На английском можно считать primary key. Хотя у меня в основном русские карты.
+    super_type = models.IntegerChoices(enums.SuperTypes, verbose_name='Супертип')  # Супертип карты: базовый, легендарный, снежный.
+    typee = models.IntegerChoices(enums.Types, verbose_name='Супертип')  # Тип карты: creature, land, enchantment, instant, sorcery, planeswalker, artifact, etc.
+    sub_type = models.CharField('Подтип')
+    text = models.TextField('Текст карты')
+    mana_cost = models.CharField('Мана-стоимость')  # Написано в формате {1}{W}{U}{B}{R}{G} - формат из Правил.
+    sett = models.CharField('Выпуск')  # Название сета. Трёхбуквенный код.
+    rarity = models.IntegerChoices(enums.Rarity, verbose_name='Редкость')  # Редкость карты: common, uncommon, rare, mythic.
+    foiled = models.BooleanField('Фольгированная')
+    language = models.IntegerChoices(enums.Languages, verbose_name='Язык')  # Язык карты: ru, en, etc.
+    image = models.ImageField('Изображение')
+    layout = models.IntegerChoices(enums.Layouts, verbose_name='Форматирование карты')  # Указание на нестандартность карты.
 
     #  Могут быть, а могут не быть:
-    power = models.CharField()
-    toughness = models.CharField()
-    initial_loyalty = models.IntegerField()
+    power = models.IntegerField('Сила', blank=True)
+    toughness = models.IntegerField('Выносливость', blank=True)
+    initial_loyalty = models.IntegerField('Стартовая верность', blank=True)
 
     class Meta:
         verbose_name = 'Карта'
         verbose_name_plural = 'Карты'
 
     def __str__(self) -> str:
-        return str(self.title)
+        return str(self.name)
 
 class CardQuantified(models.Model):
     """
@@ -64,7 +67,7 @@ class CardQuantified(models.Model):
 class Collection(models.Model):
     """Модель коллекции."""
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Владелец')
     cards = models.ManyToManyField(CardQuantified)
 
     class Meta:
