@@ -85,7 +85,7 @@ def check_response(response):
     #     )
 
 
-def get_cards(homework) -> list:
+def get_cards(data) -> list:
     """Формирование списка карт из ответа API."""
     # if (key := 'status') not in homework:
     #     raise KeyError(KEY_ERROR.format(key=key))
