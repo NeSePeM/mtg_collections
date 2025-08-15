@@ -15,11 +15,26 @@ class User(AbstractUser):
     """Модель пользователя."""
 
 
+class CardFace(models.Model):
+    """Сторона карты."""
+
+    name = models.CharField('Имя') 
+    ...
+
+    class Meta:
+        verbose_name = 'Карта'
+        verbose_name_plural = 'Карты'
+
+    def __str__(self) -> str:
+        return str(self.name)
+
+
 class Card(models.Model):
     """Модель карты."""
 
     #  Делать ли все эти поля ForeignKey?
-    scryfall_id = models.UUIDField('Идентификатор карты')
+    scryfall_id = models.UUIDField('Идентификатор карты', primary_key=True)
+    oracle_id = models.UUIDField('Идентификатор идентичностикарты')
     name = models.CharField('Имя')  # Название. На английском можно считать primary key. Хотя у меня в основном русские карты.
     super_type = models.IntegerChoices(enums.SuperTypes, verbose_name='Супертип')  # Супертип карты: базовый, легендарный, снежный.
     typee = models.IntegerChoices(enums.Types, verbose_name='Супертип')  # Тип карты: creature, land, enchantment, instant, sorcery, planeswalker, artifact, etc.
@@ -32,6 +47,7 @@ class Card(models.Model):
     language = models.IntegerChoices(enums.Languages, verbose_name='Язык')  # Язык карты: ru, en, etc.
     image = models.ImageField('Изображение')
     layout = models.IntegerChoices(enums.Layouts, verbose_name='Форматирование карты')  # Указание на нестандартность карты.
+    card_faces = models.ForeignKey(CardFace)
 
     #  Могут быть, а могут не быть:
     power = models.IntegerField('Сила', blank=True)
