@@ -1,14 +1,8 @@
-"""
-Модели для приложения mtg_collections.
-
-Приложение для создания коллекций и колод карт.
-"""
-
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-import enums
+from cards.enums_for_model import (
+    SuperTypes, Types, Languages, Rarity, Layouts
+)
 
 
 class User(AbstractUser):
@@ -18,58 +12,71 @@ class User(AbstractUser):
 class CardFace(models.Model):
     """Сторона карты."""
 
-    name = models.CharField('Имя') 
-    ...
+    name = models.CharField('Имя', max_length=255)
+    # ... остальные поля ... нужно относледоваться будет вместе с Card
 
     class Meta:
         verbose_name = 'Карта'
         verbose_name_plural = 'Карты'
 
     def __str__(self) -> str:
-        return str(self.name)
+        return self.name
 
 
 class Card(models.Model):
     """Модель карты."""
 
-    #  Делать ли все эти поля ForeignKey?
     scryfall_id = models.UUIDField('Идентификатор карты', primary_key=True)
-    oracle_id = models.UUIDField('Идентификатор идентичностикарты')
-    name = models.CharField('Имя')  # Название. На английском можно считать primary key. Хотя у меня в основном русские карты.
-    super_type = models.IntegerChoices(enums.SuperTypes, verbose_name='Супертип')  # Супертип карты: базовый, легендарный, снежный.
-    typee = models.IntegerChoices(enums.Types, verbose_name='Супертип')  # Тип карты: creature, land, enchantment, instant, sorcery, planeswalker, artifact, etc.
-    sub_type = models.CharField('Подтип')
+    oracle_id = models.UUIDField('Идентификатор идентичности карты')
+    name = models.CharField('Имя', max_length=255)
+    super_type = models.IntegerField(
+        'Супертип карты',
+        choices=SuperTypes.choices,
+        default=SuperTypes.BASIC
+    )
+    typee = models.IntegerField(
+        'Тип карты',
+        choices=Types.choices,
+        default=Types.CREATURE
+    )
+    sub_type = models.CharField('Подтип', max_length=255)
     text = models.TextField('Текст карты')
-    mana_cost = models.CharField('Мана-стоимость')  # Написано в формате {1}{W}{U}{B}{R}{G} - формат из Правил.
-    sett = models.CharField('Выпуск')  # Название сета. Трёхбуквенный код.
-    rarity = models.IntegerChoices(enums.Rarity, verbose_name='Редкость')  # Редкость карты: common, uncommon, rare, mythic.
-    foiled = models.BooleanField('Фольгированная')
-    language = models.IntegerChoices(enums.Languages, verbose_name='Язык')  # Язык карты: ru, en, etc.
+    mana_cost = models.CharField('Мана-стоимость', max_length=255)
+    sett = models.CharField('Выпуск', max_length=255)
+    rarity = models.IntegerField(
+        'Редкость',
+        choices=Rarity.choices,
+        default=Rarity.COMMON
+    )
+    foiled = models.BooleanField('Фольгированная', default=False)
+    language = models.IntegerField(
+        'Язык карты',
+        choices=Languages.choices,
+        default=Languages.RU
+    )
     image = models.ImageField('Изображение')
-    layout = models.IntegerChoices(enums.Layouts, verbose_name='Форматирование карты')  # Указание на нестандартность карты.
-    card_faces = models.ForeignKey(CardFace)
+    layout = models.IntegerField(
+        'Макет карты',
+        choices=Layouts.choices,
+        default=Layouts.STANDARD
+    )
+    card_faces = models.ManyToManyField(CardFace)
 
-    #  Могут быть, а могут не быть:
-    power = models.IntegerField('Сила', blank=True)
-    toughness = models.IntegerField('Выносливость', blank=True)
-    initial_loyalty = models.IntegerField('Стартовая верность', blank=True)
+    power = models.IntegerField('Сила', blank=True, null=True)
+    toughness = models.IntegerField('Выносливость', blank=True, null=True)
+    initial_loyalty = models.IntegerField('Стартовая верность', blank=True, null=True)
 
     class Meta:
         verbose_name = 'Карта'
         verbose_name_plural = 'Карты'
 
     def __str__(self) -> str:
-        return str(self.name)
+        return self.name
+
 
 class CardQuantified(models.Model):
     """
     Модель количества карт в коллекции или колоде.
-
-    Лучше отделить собственно карту и объект в колоде.
-    Правда, не уверен, что нужно ли делать это через ManyToManyField
-    нарпрямую на карту с полем through и обнуляемыми внешними ключами
-    (так как потребуется ссылка как на Deck, так и на Collection) или как здесь.
-    Да и в чём разница?..
     """
 
     card = models.ForeignKey(Card, on_delete=models.CASCADE)
@@ -91,15 +98,15 @@ class Collection(models.Model):
         verbose_name_plural = 'Коллекции'
 
     def __str__(self) -> str:
-        return f'Коллекция карт {self.user}'
+        return f'Коллекция {self.user.username}'
 
 
 class Deck(models.Model):
     """Модель колоды."""
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField()
-    description = models.TextField()
+    title = models.CharField('Название', max_length=255)
+    description = models.TextField('Описание')
     cards = models.ManyToManyField(CardQuantified)
 
     class Meta:
@@ -107,4 +114,4 @@ class Deck(models.Model):
         verbose_name_plural = 'Колоды'
 
     def __str__(self) -> str:
-        return str(self.title)
+        return self.title
